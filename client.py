@@ -35,7 +35,7 @@ def utilization_monitor(q, pid_to_watch):
 
 if __name__ == '__main__':
 
-    c = Client(('localhost',16000), authkey='peekaboo')
+    c = Client(('localhost',16000), authkey='sM45ubOwRfm2')
 
     c.send('Hello')
 

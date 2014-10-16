@@ -20,4 +20,4 @@ def echo_server(address, authkey):
 
 
 if __name__ == '__main__':
-    echo_server(('',16000), "peekaboo")
+    echo_server(('',16000), "sM45ubOwRfm2")
