@@ -1,3 +1,5 @@
+# by bob
+
 from multiprocessing.connection import Client
 from multiprocessing import Process, Queue
 from Queue import Empty
