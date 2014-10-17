@@ -5,11 +5,13 @@ import os
 import mmap
 from utilities.random_string_generator import id_generator
 
+files_created_during_test = []
 
 def open_file_with_random_name():
     # Open in O_DIRECT mode to try to more accurately asses the performance of the disk rather than OS buffering
     filename = id_generator(8)
-    f = os.open(filename, os.O_CREAT | os.O_DIRECT | os.O_WRONLY | os.O_APPEND)
+    f = os.open(filename, os.O_CREAT | os.O_DIRECT | os.O_SYNC | os.O_WRONLY)
+    files_created_during_test.append(filename)
     return f
 
 
@@ -45,11 +47,17 @@ def disk_tester(msgs, logger, arguments):
         size_of_this_chunk = min(chunk_size, bytes_remaining_in_file)
 
         bytes_remaining_in_chunk = size_of_this_chunk
+        start_time = time.time()
+
         while bytes_remaining_in_chunk:
-            #num = os.write(f, m[:min(bytes_remaining, one_mebibyte)])
             num = os.write(f, m)
             bytes_remaining_in_chunk -= num
             bytes_remaining_in_file -= num
+
+        elapsed_time = time.time() - start_time
+        write_speed = ((size_of_this_chunk / one_mebibyte) / elapsed_time)
+        msgs.send(('write_speed', write_speed))
+
 
         if bytes_remaining_in_file <= 0:
             os.close(f)
@@ -59,6 +67,9 @@ def disk_tester(msgs, logger, arguments):
 
 
     os.close(f)
+
+    for file in files_created_during_test:
+        os.remove(file)
 
     msgs.send(('test_completed',))
     msg = msgs.recv()

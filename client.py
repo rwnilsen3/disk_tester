@@ -23,15 +23,20 @@ def process_command_line_arguments():
     parser.add_argument('working-directory',
                         help='Location on filesystem where file write performance should be tested')
     parser.add_argument('--results-server', default='localhost',
-                        help='Maximum size in of test output files, in MiB')
-    parser.add_argument('--test-duration', type=int, default=120,
+                        help='Hostname of the server to which the client should send status and results')
+    parser.add_argument('--test-duration', type=int, default=20,
                         help='Length of time in seconds for the test to run')
-    parser.add_argument('--write-chunk-size', type=int, default=1,
+    parser.add_argument('--write-chunk-size', type=int, default=200,
                         help='Size of chunks to be written to the file, in MiB')
-    parser.add_argument('--max-file-size', type=int, default=2,
+    parser.add_argument('--max-file-size', type=int, default=800,
                         help='Maximum size in of test output files, in MiB')
-    return parser.parse_args()
+    args = parser.parse_args()
 
+    if args.write_chunk_size > args.max_file_size:
+        print 'File chunk size can not be larger than file size'
+        exit(1)
+
+    return args
 
 
 
@@ -40,6 +45,8 @@ def process_command_line_arguments():
 if __name__ == '__main__':
 
     test_config_arguments = process_command_line_arguments()
+
+
 
     c = Client((test_config_arguments.results_server,16000), authkey='sM45ubOwRfm2')
 
