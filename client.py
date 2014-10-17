@@ -26,9 +26,9 @@ def process_command_line_arguments():
                         help='Hostname of the server to which the client should send status and results')
     parser.add_argument('--test-duration', type=int, default=20,
                         help='Length of time in seconds for the test to run')
-    parser.add_argument('--write-chunk-size', type=int, default=200,
+    parser.add_argument('--write-chunk-size', type=int, default=10,
                         help='Size of chunks to be written to the file, in MiB')
-    parser.add_argument('--max-file-size', type=int, default=800,
+    parser.add_argument('--max-file-size', type=int, default=100,
                         help='Maximum size in of test output files, in MiB')
     args = parser.parse_args()
 
