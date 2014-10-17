@@ -10,7 +10,7 @@ def handle_client(c):
         print msg
 
 
-def echo_server(address, authkey):
+def results_server(address, authkey):
     server_c = Listener(address, authkey=authkey)
     while True:
         client_c = server_c.accept()
@@ -20,4 +20,4 @@ def echo_server(address, authkey):
 
 
 if __name__ == '__main__':
-    echo_server(('',16000), "sM45ubOwRfm2")
+    results_server(('',16000), "sM45ubOwRfm2")
