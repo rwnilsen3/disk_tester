@@ -8,8 +8,9 @@ def heartbeat(msgs, logger):
         logger.debug('beating')
         if msgs.poll() is True:
             msg = msgs.recv()
-            if msg and msg[0] == 'stop':
+            if msg and msg['type'] == 'stop':
                 break
 
-        msgs.send(('heartbeat', 'beat'))
+        msgs.send(dict(type='event', message='heartbeat'))
         time.sleep(5)
+

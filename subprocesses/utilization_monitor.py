@@ -1,8 +1,5 @@
-import argparse
 import time
-import multiprocessing
-from multiprocessing.connection import Client
-import logging
+
 
 try:
     import psutil
@@ -16,10 +13,11 @@ def utilization_monitor(msgs, logger, pid_to_watch):
         logger.debug('monitoring')
         if msgs.poll() is True:
             msg = msgs.recv()
-            if msg and msg[0] == 'stop':
+            if msg and msg['type'] == 'stop':
                 break
 
         cpu = p.cpu_percent(interval=1.0)
         mem = p.memory_info()
-        msgs.send(('utilization', 'cpu: %s, memory: %s' % (cpu, mem[0])))
+        msgs.send(dict(type='utilization', message='cpu: %s, memory: %s' % (cpu, mem[0])))
         time.sleep(10)
+

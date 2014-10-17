@@ -1,9 +1,9 @@
 import argparse
 import logging
 import multiprocessing
+import time
+import platform
 from multiprocessing.connection import Client
-
-
 
 from subprocesses.disktester import disk_tester
 from subprocesses.heartbeat import heartbeat
@@ -11,8 +11,13 @@ from subprocesses.utilization_monitor import utilization_monitor
 from utilities.random_string_generator import id_generator
 
 
-logger = multiprocessing.log_to_stderr()
+logger = multiprocessing.get_logger()
 logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler('client.log')
+ch = logging.StreamHandler()
+logger.addHandler(fh)
+logger.addHandler(ch)
+
 
 
 #Todo: Define all messages into a more strict protocol listing here
@@ -39,19 +44,22 @@ def process_command_line_arguments():
     return args
 
 
+def send_master_message(message_dict):
+    message_dict['test_id'] = test_id
+    message_dict['hostname'] = platform.node()
+    c.send(message_dict)
 
+
+test_id = id_generator()
 
 
 if __name__ == '__main__':
 
     test_config_arguments = process_command_line_arguments()
 
-
-
     c = Client((test_config_arguments.results_server,16000), authkey='sM45ubOwRfm2')
 
-    client_id = id_generator()
-    c.send('Client %s starting' % (client_id))
+    send_master_message(dict(type='event', message='starting'))
 
     tester_connection, tester_child_side = multiprocessing.Pipe()
     dt = multiprocessing.Process(target=disk_tester, args=(tester_child_side, logger, test_config_arguments))
@@ -66,32 +74,34 @@ if __name__ == '__main__':
     hb.start()
 
     while True:
-        if tester_connection.poll(1):
+        if tester_connection.poll():
             msg = tester_connection.recv()
             print msg
             if msg:
-                c.send(msg)
-                if msg[0] == 'test_completed':
-                    tester_connection.send(('stop',))
-                    monitor_connection.send(('stop',))
-                    heartbeat_connection.send(('stop',))
+                send_master_message(msg)
+                if msg['type'] == 'event' and msg['message'] == 'test completed':
+                    tester_connection.send(dict(type='stop', message=''))
+                    monitor_connection.send(dict(type='stop', message=''))
+                    heartbeat_connection.send(dict(type='stop', message=''))
                     break
-        else:
-            if monitor_connection.poll():
-                msg = monitor_connection.recv()
-                if msg:
-                    c.send(msg)
-            else:
-                if heartbeat_connection.poll():
-                    msg = heartbeat_connection.recv()
-                    if msg:
-                        c.send(msg)
+
+        if monitor_connection.poll():
+            msg = monitor_connection.recv()
+            if msg:
+                send_master_message(msg)
+
+        if heartbeat_connection.poll():
+            msg = heartbeat_connection.recv()
+            if msg:
+                send_master_message(msg)
+
+        time.sleep(0.25)
 
 
     dt.join()
     um.join()
     hb.join()
 
-    c.send('Client %s is done' % (client_id))
+    send_master_message(dict(type='event', message='exiting'))
 
 

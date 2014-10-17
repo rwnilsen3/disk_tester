@@ -1,6 +1,4 @@
 import time
-import multiprocessing
-import logging
 import os
 import mmap
 from utilities.random_string_generator import id_generator
@@ -35,10 +33,10 @@ def disk_tester(msgs, logger, arguments):
     bytes_remaining_in_file = max_file_size
 
     while True:
-        #logger.debug('testing')
+        logger.debug('testing')
         if msgs.poll() is True:
             msg = msgs.recv()
-            if msg and msg[0] == 'stop':
+            if msg and msg['type'] == 'stop':
                 break
 
         if time.time() > t and file_rollovers > 2:
@@ -56,7 +54,7 @@ def disk_tester(msgs, logger, arguments):
 
         elapsed_time = time.time() - start_time
         write_speed = ((size_of_this_chunk / one_mebibyte) / elapsed_time)
-        msgs.send(('write_speed', write_speed))
+        msgs.send(dict(type='chunk_sequential_write', message=str(write_speed), timestamp=time.time()))
 
 
         if bytes_remaining_in_file <= 0:
@@ -64,6 +62,7 @@ def disk_tester(msgs, logger, arguments):
             f = open_file_with_random_name()
             file_rollovers += 1
             bytes_remaining_in_file = max_file_size
+            msgs.send(dict(type='event', message='output file rollover'))
 
 
     os.close(f)
@@ -71,5 +70,5 @@ def disk_tester(msgs, logger, arguments):
     for file in files_created_during_test:
         os.remove(file)
 
-    msgs.send(('test_completed',))
+    msgs.send(dict(type='event', message='test completed'))
     msg = msgs.recv()
