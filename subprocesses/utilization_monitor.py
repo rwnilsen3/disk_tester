@@ -16,8 +16,12 @@ def utilization_monitor(msgs, logger, pid_to_watch):
             if msg and msg['type'] == 'stop':
                 break
 
-        cpu = p.cpu_percent(interval=1.0)
-        mem = p.memory_info()
-        msgs.send(dict(type='utilization', message='cpu: %s, memory: %s' % (cpu, mem[0])))
+        try:
+            cpu = p.cpu_percent(interval=1.0)
+            mem = p.memory_info()
+            msgs.send(dict(type='utilization', message='cpu: %s, memory: %s' % (cpu, mem[0])))
+        except:
+            pass
+
         time.sleep(10)
 

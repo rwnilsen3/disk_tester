@@ -12,9 +12,9 @@ def setup_logging(filename):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(filename)
-    #fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
-    #ch.setLevel(logging.ERROR)
+    ch.setLevel(logging.INFO)
     logger.addHandler(fh)
     logger.addHandler(ch)
     return logger
@@ -24,6 +24,7 @@ def client_listener(address, authkey, performance_results_queue):
     server_c = Listener(address, authkey=authkey)
     while True:
         client_c = server_c.accept()
+        master_logger.info('Client Connected')
         client_has_connected.set()
         t = threading.Thread(target=handle_client, args=(client_c, performance_results_queue))
         t.daemon = True
@@ -53,7 +54,7 @@ def clients_are_finished():
     return client_has_connected.isSet() and threading.active_count() <= 2
 
 
-master_logger = setup_logging('master.log')
+master_logger = setup_logging('server.log')
 
 client_has_connected = threading.Event()
 
@@ -67,6 +68,8 @@ if __name__ == '__main__':
 
     database_file = 'test_results.dat'
     test_results_db = shelve.open(database_file)
+
+    master_logger.info('Listening for test clients to connect')
 
     while True:
         try:
@@ -87,5 +90,5 @@ if __name__ == '__main__':
 
     test_results_db.close()
 
-    master_logger.debug('Main Thread Exiting')
+    master_logger.info('All tests competed, exiting')
 

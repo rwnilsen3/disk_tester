@@ -14,7 +14,9 @@ from utilities.random_string_generator import id_generator
 logger = multiprocessing.get_logger()
 logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler('client.log')
+fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
@@ -38,7 +40,7 @@ def process_command_line_arguments():
     args = parser.parse_args()
 
     if args.write_chunk_size > args.max_file_size:
-        print 'File chunk size can not be larger than file size'
+        logger.error('File chunk size can not be larger than file size')
         exit(1)
 
     return args
@@ -54,6 +56,8 @@ test_id = id_generator()
 
 
 if __name__ == '__main__':
+
+    logger.info('Starting up')
 
     test_config_arguments = process_command_line_arguments()
 
@@ -76,7 +80,7 @@ if __name__ == '__main__':
     while True:
         if tester_connection.poll():
             msg = tester_connection.recv()
-            print msg
+            logger.debug(msg)
             if msg:
                 send_master_message(msg)
                 if msg['type'] == 'event' and msg['message'] == 'test completed':
@@ -103,5 +107,7 @@ if __name__ == '__main__':
     hb.join()
 
     send_master_message(dict(type='event', message='exiting'))
+
+    logger.info('All done, exiting')
 
 
