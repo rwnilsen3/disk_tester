@@ -11,7 +11,42 @@ Design:
 * Log performance metrics from each chunk so that one could later build a chart showing disk performance versus time.
 
 
+How to use server:
+
+    python server.py
+
+How to use client:
+
+    python client.py --write-chunk-size 10 .
+
+
+    usage: client.py [-h] [--results-server RESULTS_SERVER]
+                     [--test-duration TEST_DURATION]
+                     [--write-chunk-size WRITE_CHUNK_SIZE]
+                     [--max-file-size MAX_FILE_SIZE]
+                     working-directory
+
+    A filesystem and disk write performance measurement utility
+
+    positional arguments:
+      working-directory     Location on filesystem where file write performance
+                            should be tested
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --results-server RESULTS_SERVER
+                            Hostname of the server to which the client should send
+                            status and results
+      --test-duration TEST_DURATION
+                            Length of time in seconds for the test to run
+      --write-chunk-size WRITE_CHUNK_SIZE
+                            Size of chunks to be written to the file, in MiB
+      --max-file-size MAX_FILE_SIZE
+                            Maximum size in of test output files, in MiB
+
+
+
 Things that could be improved:
 * The protocol for communication between clients and would perhaps be better defined rather than rely upon
   typo-prone strings all over the place.
-* Unit tests would be nice, but there are so many OS services being called making things yucky
+* Unit tests would be nice, but there are so many OS services being called making things

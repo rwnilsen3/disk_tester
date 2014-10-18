@@ -56,8 +56,8 @@ def setup_logging(filename):
     """
 
     logger = multiprocessing.get_logger()
-    DEFAULT_LOGGING_FORMAT = '[%(levelname)s/%(processName)s] %(message)s'
-    formatter = logging.Formatter(DEFAULT_LOGGING_FORMAT)
+    LOGGING_FORMAT = '%(asctime)s [%(levelname)s/%(processName)s] %(message)s'
+    formatter = logging.Formatter(LOGGING_FORMAT)
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(filename)
     fh.setFormatter(formatter)
@@ -76,9 +76,8 @@ if __name__ == '__main__':
     test_id = id_generator()
     logger = setup_logging('client_' + test_id + '.log')
     LOG_ALWAYS = 60
-    logger.log(LOG_ALWAYS, 'Starting up')
-
     test_config_arguments = process_command_line_arguments()
+    logger.log(LOG_ALWAYS, 'Starting up')
 
     # connect to test results server
     c = Client((test_config_arguments.results_server,16000), authkey='sM45ubOwRfm2')

@@ -16,8 +16,11 @@ def setup_logging(filename):
     :return: Logger -- handle to a Logger object for writing logs to
     """
     logger = logging.getLogger()
+    LOGGING_FORMAT = '%(asctime)s [%(levelname)s/%(processName)s] %(message)s'
+    formatter = logging.Formatter(LOGGING_FORMAT)
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(filename)
+    fh.setFormatter(formatter)
     fh.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
