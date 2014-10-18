@@ -57,9 +57,9 @@ def setup_logging(filename):
     logger = multiprocessing.get_logger()
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(filename)
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.INFO)
     ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
+    ch.setLevel(logging.WARNING)
     logger.addHandler(fh)
     logger.addHandler(ch)
     return logger
@@ -70,8 +70,8 @@ Main
 """
 if __name__ == '__main__':
     logger = setup_logging('client.log')
-
-    logger.info('Starting up')
+    LOG_ALWAYS = 60
+    logger.log(LOG_ALWAYS, 'Starting up')
 
     test_config_arguments = process_command_line_arguments()
 
@@ -79,6 +79,8 @@ if __name__ == '__main__':
 
     # connect to test results server
     c = Client((test_config_arguments.results_server,16000), authkey='sM45ubOwRfm2')
+
+    logger.log(LOG_ALWAYS, 'Connected to server')
 
     send_master_message(dict(type='event', message='starting'))
 
@@ -131,6 +133,6 @@ if __name__ == '__main__':
 
     send_master_message(dict(type='event', message='exiting'))
 
-    logger.info('All done, exiting')
+    logger.log(LOG_ALWAYS, 'All done, exiting')
 
 

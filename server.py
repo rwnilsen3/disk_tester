@@ -81,6 +81,21 @@ def clients_are_finished():
     return client_has_connected.isSet() and threading.active_count() <= 2
 
 
+def print_report(test_id_list, results_database):
+    """Print report of test results from all clients
+    :param test_id_list: list of test run ids for this session
+    :results_database: database to pull results from
+    """
+    for id in test_id_list:
+        if id in results_database:
+            test_stats = results_database[id]
+            minWrite = min(float(s['message']) for s in test_stats)
+            maxWrite = max(float(s['message']) for s in test_stats)
+            avgWrite = sum(float(s['message']) for s in test_stats) / len(test_stats)
+            logger.info("Client: %s Test ID: %s Write Throughput ( min %.2f MiB/s / avg %.2f MiB/s / max %.2f MiB/s )" %
+                        (test_stats[0]['hostname'], id, minWrite, avgWrite, maxWrite))
+
+
 """
 Main
 """
@@ -108,7 +123,8 @@ if __name__ == '__main__':
                 if msg:
                     # store to db
                     test_id = msg['test_id']
-                    test_id_list.append(msg['test_id'])
+                    if test_id not in test_id_list:
+                        test_id_list.append(test_id)
                     if test_id in test_results_db:
                         result_list = test_results_db[test_id]
                     else:
@@ -118,10 +134,11 @@ if __name__ == '__main__':
 
             except Queue.Empty:
                 pass
+
+        print_report(test_id_list, test_results_db)
+
     finally:
         test_results_db.close()
-
-    Todo: print out report with general usage, client fails, perf stats
 
     logger.info('All tests competed, exiting')
 

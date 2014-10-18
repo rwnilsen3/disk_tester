@@ -6,7 +6,7 @@ import os
 import mmap
 from utilities.random_string_generator import id_generator
 
-
+LOG_ALWAYS = 60
 
 def open_file_with_random_name(files_created_during_test):
     """ Opens a file for writing, using a random name to avoid overwriting an existing file.
@@ -45,6 +45,8 @@ def disk_tester(msgs, logger, arguments):
     files_created_during_test = []
     f = open_file_with_random_name(files_created_during_test)
     bytes_remaining_in_file = max_file_size
+
+    logger.log(LOG_ALWAYS, 'Beginning Disk Test')
 
     t = time.time() + arguments.test_duration
 
