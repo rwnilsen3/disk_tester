@@ -1,11 +1,17 @@
 Installation Dependencies:
+pip install psutil
 
 
 Design:
-
-* Log performance metrics from each chunk so that one could later build a chart showing disk performance verus runtime.
+* Multithreaded server, one thread per client, db writes all done in main thread
+* Multi-process clients, one for disk test, one for heartbeats, one for monitoring.
+  Communicating via pipes
+* Disk tester writes random data to simulate worst case for storage that does compression
+  Data written in O_DIRECT mode to isolate disk performance from OS caching effects
+* Log performance metrics from each chunk so that one could later build a chart showing disk performance versus time.
 
 
 Things that could be improved:
 * The protocol for communication between clients and would perhaps be better defined rather than rely upon
   typo-prone strings all over the place.
+* Unit tests would be nice, but there are so many OS services being called making things yucky
