@@ -92,7 +92,7 @@ def print_report(test_id_list, results_database):
             minWrite = min(float(s['message']) for s in test_stats)
             maxWrite = max(float(s['message']) for s in test_stats)
             avgWrite = sum(float(s['message']) for s in test_stats) / len(test_stats)
-            logger.info("Client: %s Test ID: %s Write Throughput ( min %.2f MiB/s / avg %.2f MiB/s / max %.2f MiB/s )" %
+            logger.info("Hostname: %s Test ID: %s Write Throughput ( min %.2f MiB/s / avg %.2f MiB/s / max %.2f MiB/s )" %
                         (test_stats[0]['hostname'], id, minWrite, avgWrite, maxWrite))
 
 

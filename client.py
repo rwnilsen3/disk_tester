@@ -54,10 +54,14 @@ def setup_logging(filename):
     :param filename: File to write log statements to
     :return: Logger
     """
+
     logger = multiprocessing.get_logger()
+    DEFAULT_LOGGING_FORMAT = '[%(levelname)s/%(processName)s] %(message)s'
+    formatter = logging.Formatter(DEFAULT_LOGGING_FORMAT)
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(filename)
-    fh.setLevel(logging.INFO)
+    fh.setFormatter(formatter)
+    fh.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
     ch.setLevel(logging.WARNING)
     logger.addHandler(fh)
@@ -69,13 +73,12 @@ def setup_logging(filename):
 Main
 """
 if __name__ == '__main__':
-    logger = setup_logging('client.log')
+    test_id = id_generator()
+    logger = setup_logging('client_' + test_id + '.log')
     LOG_ALWAYS = 60
     logger.log(LOG_ALWAYS, 'Starting up')
 
     test_config_arguments = process_command_line_arguments()
-
-    test_id = id_generator()
 
     # connect to test results server
     c = Client((test_config_arguments.results_server,16000), authkey='sM45ubOwRfm2')
