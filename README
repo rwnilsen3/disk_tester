@@ -50,4 +50,4 @@ How to use client:
 
 Things that could be improved:
 * The protocol for communication between clients and would perhaps be better defined rather than rely upon typo-prone strings all over the place.
-* Unit tests would be nice, but there are so many OS services being called making things
+* Unit tests would be nice, but there are so many OS services being called making things messy.  So then, refactor with some dependency injection for testibility?
