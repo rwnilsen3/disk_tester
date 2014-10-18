@@ -83,6 +83,7 @@ def disk_tester(msgs, logger, arguments):
                 file_rollovers += 1
                 bytes_remaining_in_file = max_file_size
                 msgs.send(dict(type='event', message='output file rollover'))
+
     finally:
         os.close(f)
 

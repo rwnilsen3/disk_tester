@@ -94,6 +94,8 @@ if __name__ == '__main__':
     port = 16000
     listener_handle = start_client_listener((hostname, port), authentication_key, performance_results_queue)
 
+    test_id_list = []
+
     database_file = 'test_results.dat'
     test_results_db = shelve.open(database_file)
 
@@ -106,6 +108,7 @@ if __name__ == '__main__':
                 if msg:
                     # store to db
                     test_id = msg['test_id']
+                    test_id_list.append(msg['test_id'])
                     if test_id in test_results_db:
                         result_list = test_results_db[test_id]
                     else:
@@ -117,6 +120,8 @@ if __name__ == '__main__':
                 pass
     finally:
         test_results_db.close()
+
+    Todo: print out report with general usage, client fails, perf stats
 
     logger.info('All tests competed, exiting')
 
