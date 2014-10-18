@@ -3,6 +3,9 @@ Installation Dependencies:
 
 Design:
 
+* Log performance metrics from each chunk so that one could later build a chart showing disk performance verus runtime.
 
-Things that could be better:
-protocol
+
+Things that could be improved:
+* The protocol for communication between clients and would perhaps be better defined rather than rely upon
+  typo-prone strings all over the place.

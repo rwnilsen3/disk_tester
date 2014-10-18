@@ -1,3 +1,6 @@
+"""A client process that tests disk performance and reports results to a server process/database
+"""
+
 import argparse
 import logging
 import multiprocessing
@@ -11,21 +14,11 @@ from subprocesses.utilization_monitor import utilization_monitor
 from utilities.random_string_generator import id_generator
 
 
-logger = multiprocessing.get_logger()
-logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('client.log')
-fh.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-logger.addHandler(fh)
-logger.addHandler(ch)
-
-
-
-#Todo: Define all messages into a more strict protocol listing here
-
 
 def process_command_line_arguments():
+    """Setup argparse to handle command line options
+    :return: arguments from command line
+    """
     parser = argparse.ArgumentParser(description='A filesystem and disk write performance measurement utility')
     parser.add_argument('working-directory',
                         help='Location on filesystem where file write performance should be tested')
@@ -47,37 +40,66 @@ def process_command_line_arguments():
 
 
 def send_master_message(message_dict):
+    """Send message to server, adding in extra details about hostname and test run id
+    :param message_dict: Contents of message
+    :return: None
+    """
     message_dict['test_id'] = test_id
     message_dict['hostname'] = platform.node()
     c.send(message_dict)
 
 
-test_id = id_generator()
+def setup_logging(filename):
+    """Configure Logger
+    :param filename: File to write log statements to
+    :return: Logger
+    """
+    logger = multiprocessing.get_logger()
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler(filename)
+    fh.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+    return logger
 
 
+"""
+Main
+"""
 if __name__ == '__main__':
+    logger = setup_logging('client.log')
 
     logger.info('Starting up')
 
     test_config_arguments = process_command_line_arguments()
 
+    test_id = id_generator()
+
+    # connect to test results server
     c = Client((test_config_arguments.results_server,16000), authkey='sM45ubOwRfm2')
 
     send_master_message(dict(type='event', message='starting'))
 
+    # create thread to do disk testing
     tester_connection, tester_child_side = multiprocessing.Pipe()
     dt = multiprocessing.Process(target=disk_tester, args=(tester_child_side, logger, test_config_arguments))
     dt.start()
 
+    # create thread to monitor utilization of disk testing thread
     monitor_connection, monitor_child_side = multiprocessing.Pipe()
     um = multiprocessing.Process(target=utilization_monitor, args=(monitor_child_side, logger, dt.pid))
     um.start()
 
+    # create heartbeat sender thread
     heartbeat_connection, heartbeat_child_side = multiprocessing.Pipe()
     hb = multiprocessing.Process(target=heartbeat, args=(heartbeat_child_side, logger))
     hb.start()
 
     while True:
+
+        # Receive messages from disk tester thread, routing as appropriate
         if tester_connection.poll():
             msg = tester_connection.recv()
             logger.debug(msg)
@@ -89,18 +111,19 @@ if __name__ == '__main__':
                     heartbeat_connection.send(dict(type='stop', message=''))
                     break
 
+        # Route messages from monitor to server
         if monitor_connection.poll():
             msg = monitor_connection.recv()
             if msg:
                 send_master_message(msg)
 
+        # Route heartbeats to server
         if heartbeat_connection.poll():
             msg = heartbeat_connection.recv()
             if msg:
                 send_master_message(msg)
 
         time.sleep(0.25)
-
 
     dt.join()
     um.join()

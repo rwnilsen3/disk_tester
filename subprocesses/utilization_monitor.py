@@ -1,11 +1,12 @@
 import time
 
-
 try:
     import psutil
 except ImportError:
     print "This python module requires the 'psutil' module be installed"
     sys.exit(1)
+
+
 
 def utilization_monitor(msgs, logger, pid_to_watch):
     p = psutil.Process(pid_to_watch)
